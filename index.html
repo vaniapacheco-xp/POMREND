@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#20283a">
+  <meta name="description" content="Pomodoro educativo con agenda, analítica, logros y recomendaciones inteligentes.">
+  <title>PomRend — Sistema Inteligente de Estudio</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    :root{--tomato:#e74c3c;--tomato-dark:#c63f33;--green:#2ecc71;--green-dark:#219a55;--nav:#20283a;--nav-2:#2c354a;--ink:#192235;--muted:#6d7585;--line:#e6e9ef;--surface:#fff;--canvas:#f4f6f8;--blue:#3975d9;--amber:#f2a93b;--shadow:0 10px 28px rgba(25,34,53,.08);--radius:14px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--canvas);color:var(--ink);font:14px Inter,"Segoe UI",Arial,sans-serif}.hidden{display:none!important}button,input,select{font:inherit}button{cursor:pointer}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .auth-view{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.08fr) minmax(390px,.92fr);background:#fff}.auth-hero{position:relative;overflow:hidden;padding:clamp(32px,6vw,82px);display:flex;flex-direction:column;justify-content:center;color:#fff;background:linear-gradient(145deg,#20283a 0%,#2b3449 58%,#243d38 100%)}.auth-hero:before,.auth-hero:after{content:"";position:absolute;border-radius:50%;filter:blur(1px)}.auth-hero:before{width:420px;height:420px;right:-160px;top:-140px;background:rgba(231,76,60,.17)}.auth-hero:after{width:300px;height:300px;left:-140px;bottom:-120px;background:rgba(46,204,113,.12)}.hero-content{position:relative;z-index:1;max-width:580px}.brand-lockup{display:flex;align-items:center;gap:18px}.brand-lockup h1{margin:0;font-size:clamp(36px,5vw,64px);line-height:1;letter-spacing:-.045em}.brand-lockup p{margin:8px 0 0;color:#cbd3e1;font-size:15px}.tomato-logo{position:relative;width:92px;height:84px;border-radius:52% 48% 52% 48%;display:grid;place-items:center;background:linear-gradient(145deg,#ff7567,var(--tomato) 58%,#bd3329);box-shadow:inset -8px -9px 16px rgba(113,20,15,.22),0 18px 36px rgba(0,0,0,.2);animation:float 4s ease-in-out infinite}.tomato-logo:before{content:"";position:absolute;top:-13px;width:46px;height:27px;background:var(--green);clip-path:polygon(50% 0,60% 35%,100% 30%,71% 55%,88% 100%,52% 70%,18% 100%,31% 57%,0 31%,40% 36%)}.tomato-logo .dial{width:52px;height:52px;border:3px solid rgba(255,255,255,.75);border-radius:50%;display:grid;place-items:center;font:800 20px ui-monospace,monospace}.tomato-logo .hand{position:absolute;width:2px;height:21px;background:#fff;left:50%;top:21px;transform-origin:bottom;animation:spin 4s linear infinite}.hero-copy{font-size:clamp(22px,2.6vw,34px);line-height:1.18;letter-spacing:-.025em;margin:48px 0 18px}.hero-copy em{color:#72e4a2;font-style:normal}.feature-list{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:34px}.feature{display:flex;gap:11px;align-items:flex-start;padding:14px 16px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.05);backdrop-filter:blur(8px)}.feature i{color:#72e4a2;margin-top:2px}.feature b{display:block;font-size:13px}.feature span{display:block;color:#b8c1d1;font-size:11px;margin-top:3px;line-height:1.4}
+    .auth-panel{display:flex;align-items:center;justify-content:center;padding:34px;background:linear-gradient(#fff,#fafbfc)}.auth-card{width:min(100%,430px)}.auth-card h2{font-size:28px;letter-spacing:-.03em;margin:0 0 7px}.auth-card>p{color:var(--muted);margin:0 0 26px}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;background:#eef1f4;padding:4px;border-radius:10px;margin-bottom:22px}.auth-tab{border:0;background:transparent;color:var(--muted);padding:10px;border-radius:7px;font-weight:700}.auth-tab.active{background:#fff;color:var(--ink);box-shadow:0 3px 10px rgba(28,38,57,.08)}.field{display:grid;gap:7px;margin:13px 0}.field label{font-size:12px;font-weight:700;color:#394258}.input,.select{width:100%;border:1px solid #d8dce4;border-radius:9px;padding:12px 13px;background:#fff;color:var(--ink);outline:0;transition:.2s}.input:focus,.select:focus{border-color:var(--tomato);box-shadow:0 0 0 3px rgba(231,76,60,.1)}.primary-btn,.secondary-btn,.icon-btn,.danger-btn{border:0;border-radius:9px;font-weight:750;transition:.2s}.primary-btn{background:var(--tomato);color:#fff;padding:12px 17px;box-shadow:0 7px 16px rgba(231,76,60,.22)}.primary-btn:hover{background:var(--tomato-dark);transform:translateY(-1px)}.primary-btn.full-btn{width:100%;margin-top:13px}.secondary-btn{background:#edf0f4;color:#30394d;padding:10px 14px}.secondary-btn:hover{background:#e3e7ec}.danger-btn{background:#fee9e7;color:#c73d32;padding:9px 12px}.config-link{display:block;margin:18px auto 0;border:0;background:none;color:var(--blue);font-size:12px}.demo-note{margin-top:18px;padding:12px 14px;border-radius:9px;background:#f3f7fc;color:#536077;font-size:11px;line-height:1.5;border-left:3px solid var(--blue)}
+    .app-view{min-height:100vh;display:grid;grid-template-columns:228px minmax(0,1fr)}.sidebar{position:sticky;top:0;height:100vh;background:var(--nav);color:#fff;padding:22px 15px;display:flex;flex-direction:column;z-index:15}.mini-brand{display:flex;gap:11px;align-items:center;padding:0 10px 25px}.mini-logo{position:relative;width:38px;height:35px;display:grid;place-items:center;border-radius:50%;background:linear-gradient(145deg,#ff7165,var(--tomato));font-weight:850;font-size:12px}.mini-logo:before{content:"";position:absolute;top:-6px;width:19px;height:11px;background:var(--green);clip-path:polygon(50% 0,64% 40%,100% 32%,73% 64%,83% 100%,50% 73%,14% 100%,27% 62%,0 34%,39% 40%)}.mini-brand b{font-size:19px;letter-spacing:-.02em}.mini-brand small{display:block;color:#9fa9bd;font-size:9px;margin-top:2px}.sidebar nav{display:grid;gap:5px}.nav-btn{display:flex;align-items:center;gap:13px;border:0;background:transparent;color:#b7c0d1;text-align:left;padding:12px 13px;border-radius:9px;font-weight:650}.nav-btn i{width:18px;text-align:center}.nav-btn:hover,.nav-btn.active{background:var(--nav-2);color:#fff}.nav-btn.active{box-shadow:inset 3px 0 var(--tomato)}.sidebar-bottom{margin-top:auto;padding:14px 10px 3px;border-top:1px solid rgba(255,255,255,.08)}.sync-state{color:#8f9bb0;font-size:10px;display:flex;align-items:center;gap:7px}.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--amber)}.sync-dot.online{background:var(--green)}.app-main{min-width:0}.topbar{height:70px;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:10;backdrop-filter:blur(10px)}.page-title h1{font-size:17px;margin:0}.page-title p{font-size:11px;color:var(--muted);margin:3px 0 0}.top-actions{display:flex;align-items:center;gap:9px}.icon-btn{width:36px;height:36px;background:#eef1f5;color:#4c566b}.icon-btn:hover{background:#e3e7ed}.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#fde5e2;color:var(--tomato);font-weight:850}.workspace{padding:23px 28px 38px}.intro-row{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:18px}.eyebrow{text-transform:uppercase;letter-spacing:.1em;font-size:10px;font-weight:850;color:var(--tomato)}.intro-row h2{font-size:25px;letter-spacing:-.035em;margin:5px 0 0}.goal-inline{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}.goal-inline input{width:58px;padding:8px;border:1px solid var(--line);border-radius:7px;font-weight:800;color:var(--ink)}.dashboard-grid{display:grid;grid-template-columns:1.05fr .95fr .95fr;gap:16px}.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:19px;box-shadow:var(--shadow);min-width:0}.card.full{grid-column:1/-1}.card.two{grid-column:span 2}.card-head{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:15px}.card-title{display:flex;align-items:center;gap:9px}.card-title i{color:var(--tomato)}.card h3{font-size:14px;margin:0}.micro{font-size:10px;color:var(--muted)}.status-pill{font-size:10px;padding:5px 9px;border-radius:20px;background:#fde8e5;color:var(--tomato);font-weight:800}.status-pill.green{background:#e6f8ee;color:var(--green-dark)}.timer-wrap{text-align:center;padding:7px 0 1px}.timer-display{font:800 clamp(48px,5vw,66px)/1 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:-.065em}.timer-state{font-weight:750;color:var(--tomato);margin:8px 0 0}.timer-card.break-mode .timer-state{color:var(--green)}.timer-card.break-mode .timer-progress span{background:linear-gradient(90deg,var(--green),#83e4aa)}.timer-progress{height:7px;border-radius:8px;overflow:hidden;background:#edf0f4;margin:19px 0 10px}.timer-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--tomato),#ff9a83);transition:width .4s}.timer-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:10px;margin-bottom:16px}.timer-actions{display:flex;justify-content:center;gap:8px}.timer-actions button{min-width:42px}.ai-chip{display:inline-flex;align-items:center;gap:6px;background:#edf8f2;color:#21864b;font-weight:750;font-size:10px;padding:5px 9px;border-radius:20px}.metric-big{font-size:43px;font-weight:850;color:var(--tomato);line-height:1;margin:12px 0 5px}.insight-box{padding:12px 13px;background:#f5f7fa;border-left:3px solid var(--green);border-radius:8px;line-height:1.48;margin-top:16px;font-size:11px}.insight-box b{display:block;color:#334057;margin-bottom:3px}.history{margin-top:13px;display:grid;gap:7px}.history-item{display:flex;justify-content:space-between;gap:10px;padding-top:7px;border-top:1px dashed var(--line);font-size:10px;color:var(--muted)}.history-item b{color:#414b60}.task-toolbar{display:flex;gap:7px}.task-list{display:grid;max-height:254px;overflow:auto;padding-right:2px}.task-item{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line)}.task-item:first-child{border-top:0}.task-check{width:19px;height:19px;border:2px solid #cbd1dc;border-radius:5px;background:#fff;color:#fff;padding:0}.task-check.done{background:var(--green);border-color:var(--green)}.task-copy b{display:block;font-size:12px}.task-copy small{font-size:10px;color:var(--muted)}.task-item.completed .task-copy b{text-decoration:line-through;color:#929aa8}.task-menu{display:flex;gap:3px}.task-menu button{width:28px;height:28px;border:0;background:transparent;border-radius:6px;color:#8790a1}.task-menu button:hover{background:#f0f2f5;color:var(--ink)}.empty{padding:24px 8px;text-align:center;color:var(--muted);font-size:11px}
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px}.kpi{padding:13px 15px;border-left:1px solid var(--line)}.kpi:first-child{border-left:0}.kpi b{display:block;font-size:23px;letter-spacing:-.03em}.kpi span{font-size:10px;color:var(--muted)}.chart-wrap{height:220px;position:relative}.legend-note{font-size:10px;color:var(--muted)}.badge-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.badge{position:relative;text-align:center;padding:13px 8px;border:1px solid var(--line);border-radius:11px;background:#fafbfc;min-height:112px}.badge.locked{filter:grayscale(1);opacity:.48}.badge-icon{font-size:28px;margin-bottom:7px}.badge b{display:block;font-size:10px}.badge small{display:block;font-size:9px;color:var(--muted);line-height:1.35;margin-top:4px}.badge[data-tip]:hover:after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);background:var(--nav);color:#fff;padding:7px 9px;border-radius:6px;font-size:9px;width:150px;z-index:4}.eval-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:22px}.choice-row{display:flex;flex-wrap:wrap;gap:7px}.choice input{position:absolute;opacity:0}.choice span{display:inline-block;padding:8px 10px;border:1px solid #d8dce4;border-radius:8px;font-size:10px;color:#596278}.choice input:checked+span{border-color:var(--tomato);background:#fde9e6;color:var(--tomato-dark);font-weight:750}.eval-saved{padding:15px;background:linear-gradient(145deg,#20283a,#2e394f);border-radius:10px;color:#fff;display:grid;align-content:center}.eval-saved small{color:#aeb7c9}.eval-saved b{font-size:17px;margin:5px 0}.teacher-panel{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:17px;background:linear-gradient(90deg,#f1f8f4,#f8fbf9);border:1px solid #d9eee2;border-radius:11px}.teacher-panel i{font-size:27px;color:var(--green-dark)}.teacher-panel b{display:block;margin-bottom:4px}.teacher-panel p{margin:0;color:#5d6b64;font-size:11px}.ai-recommendations{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.rec{padding:12px;background:#f7f8fa;border-radius:9px;border-top:3px solid var(--blue)}.rec:nth-child(2){border-color:var(--green)}.rec:nth-child(3){border-color:var(--amber)}.rec b{font-size:10px;display:block;margin-bottom:4px}.rec span{font-size:9px;line-height:1.4;color:var(--muted)}.toast{position:fixed;right:20px;bottom:20px;z-index:100;min-width:260px;max-width:380px;padding:13px 15px;border-radius:10px;color:#fff;background:var(--nav);box-shadow:0 15px 34px rgba(0,0,0,.2);transform:translateY(120px);opacity:0;transition:.3s}.toast.show{transform:translateY(0);opacity:1}.toast.success{background:#218b4d}.toast.warn{background:#c94539}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(22,29,43,.52);z-index:50;display:grid;place-items:center;padding:18px;backdrop-filter:blur(3px)}.modal{width:min(100%,480px);max-height:90vh;overflow:auto;background:#fff;border-radius:15px;padding:22px;box-shadow:0 28px 75px rgba(14,20,32,.3)}.modal.wide{width:min(100%,620px)}.modal-head{display:flex;justify-content:space-between;align-items:center}.modal-head h3{margin:0;font-size:18px}.modal-close{border:0;background:#edf0f4;width:32px;height:32px;border-radius:8px;color:#60697b}.modal-copy{color:var(--muted);font-size:12px;line-height:1.5}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.reason-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.reason-btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:12px;text-align:left;color:#4b556a}.reason-btn.active{border-color:var(--tomato);background:#fde9e6;color:var(--tomato-dark);font-weight:750}.firebase-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.firebase-fields .field:nth-child(3),.firebase-fields .field:nth-child(4){grid-column:1/-1}
+    @keyframes float{50%{transform:translateY(-8px)}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{50%{box-shadow:0 0 0 9px rgba(231,76,60,.08)}}.timer-running{animation:pulse 2s ease-in-out infinite}
+    @media(max-width:1120px){.dashboard-grid{grid-template-columns:1fr 1fr}.timer-card{grid-column:1/-1}.card.two{grid-column:1/-1}.badge-grid{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:860px){.auth-view{grid-template-columns:1fr}.auth-hero{min-height:400px;padding:42px}.auth-panel{padding:42px 22px}.app-view{grid-template-columns:76px 1fr}.mini-brand{justify-content:center;padding-inline:0}.mini-brand>div:last-child,.nav-btn span,.sidebar-bottom span:last-child{display:none}.nav-btn{justify-content:center}.dashboard-grid{grid-template-columns:1fr}.timer-card,.card.two,.card.full{grid-column:auto}.eval-grid{grid-template-columns:1fr}.ai-recommendations{grid-template-columns:1fr}.badge-grid{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:600px){.feature-list{grid-template-columns:1fr}.auth-hero{min-height:520px;padding:34px 24px}.brand-lockup h1{font-size:40px}.tomato-logo{width:76px;height:70px}.hero-copy{margin-top:34px}.app-view{display:block}.sidebar{position:fixed;left:0;right:0;bottom:0;top:auto;height:66px;padding:7px 10px;z-index:30}.mini-brand,.sidebar-bottom{display:none}.sidebar nav{grid-template-columns:repeat(5,1fr);gap:3px}.nav-btn{padding:10px 6px;display:grid;place-items:center;gap:2px;font-size:9px}.nav-btn span{display:block}.nav-btn i{font-size:14px}.nav-btn.active{box-shadow:inset 0 3px var(--tomato)}.topbar{padding:0 16px}.workspace{padding:17px 15px 86px}.intro-row{align-items:flex-start}.intro-row h2{font-size:21px}.goal-inline{display:grid;grid-template-columns:auto auto}.dashboard-grid{gap:12px}.card{padding:16px}.kpi-grid{grid-template-columns:1fr 1fr}.kpi:nth-child(3){border-left:0;border-top:1px solid var(--line)}.kpi:nth-child(4){border-top:1px solid var(--line)}.badge-grid{grid-template-columns:1fr 1fr}.teacher-panel{align-items:flex-start}.firebase-fields{grid-template-columns:1fr}.firebase-fields .field:nth-child(3),.firebase-fields .field:nth-child(4){grid-column:auto}.reason-grid{grid-template-columns:1fr}.timer-display{font-size:54px}.auth-card h2{font-size:24px}}
+    .timer-meta{margin-bottom:7px}.daily-goal-bar{height:5px;border-radius:8px;background:#edf0f4;overflow:hidden;margin-bottom:16px}.daily-goal-bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),#79a8f5);transition:width .3s}.badge:nth-child(1){border-top:3px solid #b9783f}.badge:nth-child(2){border-top:3px solid #9aa4b1}.badge:nth-child(3){border-top:3px solid #e1ad25}.badge:nth-child(4){border-top:3px solid #4fc6d0}.badge:nth-child(5){border-top:3px solid var(--green)}
+  </style>
+</head>
+<body>
+  <section id="authView" class="auth-view">
+    <div class="auth-hero">
+      <div class="hero-content">
+        <div class="brand-lockup">
+          <div class="tomato-logo" aria-label="Tomate cronómetro PomRend"><span class="hand"></span><span class="dial">25</span></div>
+          <div><h1>PomRend</h1><p>Sistema Inteligente de Estudio</p></div>
+        </div>
+        <h2 class="hero-copy">Convierte tu tiempo de estudio en <em>progreso visible.</em></h2>
+        <p style="color:#cbd3e1;line-height:1.65;max-width:520px">Organiza tus actividades, protege tu concentración y entiende tus hábitos con un panel claro, diseñado para estudiantes.</p>
+        <div class="feature-list">
+          <div class="feature"><i class="fa-solid fa-clock"></i><div><b>Enfoque guiado</b><span>Ciclos 25/5 con seguimiento diario.</span></div></div>
+          <div class="feature"><i class="fa-solid fa-chart-column"></i><div><b>Analítica útil</b><span>Progreso y distracciones de 7 días.</span></div></div>
+          <div class="feature"><i class="fa-solid fa-list-check"></i><div><b>Agenda integrada</b><span>Tareas conectadas con pomodoros.</span></div></div>
+          <div class="feature"><i class="fa-solid fa-wand-magic-sparkles"></i><div><b>Orientación inteligente</b><span>Recomendaciones según tu desempeño.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-panel">
+      <div class="auth-card">
+        <h2 id="authHeading">Bienvenido de nuevo</h2>
+        <p id="authLead">Continúa tu sesión y mantén el impulso.</p>
+        <div class="auth-tabs"><button class="auth-tab active" data-auth="login">Iniciar sesión</button><button class="auth-tab" data-auth="register">Crear cuenta</button></div>
+        <form id="authForm">
+          <div class="field register-only hidden"><label for="fullName">Nombre completo</label><input class="input" id="fullName" autocomplete="name" placeholder="Tu nombre"></div>
+          <div class="field"><label for="email">Correo electrónico</label><input class="input" id="email" type="email" autocomplete="email" required placeholder="nombre@correo.com"></div>
+          <div class="field"><label for="password">Contraseña</label><input class="input" id="password" type="password" minlength="6" autocomplete="current-password" required placeholder="Mínimo 6 caracteres"></div>
+          <button id="authSubmit" class="primary-btn full-btn" type="submit">Entrar a mi panel</button>
+        </form>
+        <button class="config-link" data-open="firebaseModal"><i class="fa-solid fa-gear"></i> Configurar conexión Firebase</button>
+        <div id="demoNote" class="demo-note"><b>Modo demostración activo.</b> Todo funciona y se guarda en este dispositivo. Agrega las credenciales de tu proyecto Firebase para habilitar autenticación y sincronización en la nube.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="appView" class="app-view hidden">
+    <aside class="sidebar">
+      <div class="mini-brand"><div class="mini-logo">25</div><div><b>PomRend</b><small>ESTUDIO INTELIGENTE</small></div></div>
+      <nav aria-label="Secciones">
+        <button class="nav-btn active" data-scroll="panel"><i class="fa-solid fa-table-columns"></i><span>Mi panel</span></button>
+        <button class="nav-btn" data-scroll="agenda"><i class="fa-solid fa-list-check"></i><span>Agenda</span></button>
+        <button class="nav-btn" data-scroll="progreso"><i class="fa-solid fa-chart-line"></i><span>Progreso</span></button>
+        <button class="nav-btn" data-scroll="logros"><i class="fa-solid fa-medal"></i><span>Logros</span></button>
+        <button class="nav-btn" data-scroll="evaluacion"><i class="fa-solid fa-graduation-cap"></i><span>Evaluación</span></button>
+      </nav>
+      <div class="sidebar-bottom"><div class="sync-state"><i id="syncDot" class="sync-dot"></i><span id="syncText">Guardado local</span></div></div>
+    </aside>
+    <div class="app-main">
+      <header class="topbar">
+        <div class="page-title"><h1>Panel de estudio</h1><p id="todayLabel">Tu sesión de enfoque</p></div>
+        <div class="top-actions">
+          <button class="icon-btn" data-open="firebaseModal" aria-label="Configurar Firebase"><i class="fa-solid fa-gear"></i></button>
+          <button class="icon-btn" id="logoutBtn" aria-label="Cerrar sesión"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+          <div class="avatar" id="avatar">PR</div>
+        </div>
+      </header>
+      <main class="workspace" id="panel">
+        <div class="intro-row">
+          <div><div class="eyebrow">Sistema inteligente de estudio</div><h2 id="welcomeTitle">¡A construir un gran día!</h2></div>
+          <label class="goal-inline">Meta diaria <input id="dailyGoal" type="number" min="1" max="20" value="4"> pomodoros</label>
+        </div>
+        <div class="dashboard-grid">
+          <article class="card timer-card" id="timerCard">
+            <div class="card-head"><div class="card-title"><i class="fa-solid fa-clock"></i><h3>Cronómetro Pomodoro</h3></div><span id="modePill" class="status-pill">Listo</span></div>
+            <div class="timer-wrap">
+              <div id="timerDisplay" class="timer-display" aria-live="polite">25:00</div>
+              <div id="timerState" class="timer-state">Preparado para enfocarte</div>
+              <div class="timer-progress"><span id="timerProgress"></span></div>
+              <div class="timer-meta"><span id="todayCount">0 completados hoy</span><span id="goalProgress">0% de la meta</span></div>
+              <div class="daily-goal-bar" aria-hidden="true"><span id="dailyGoalBar"></span></div>
+              <div class="timer-actions">
+                <button id="resetBtn" class="secondary-btn" aria-label="Reiniciar"><i class="fa-solid fa-rotate-left"></i></button>
+                <button id="startBtn" class="primary-btn"><i class="fa-solid fa-play"></i> Iniciar</button>
+                <button id="pauseBtn" class="secondary-btn" aria-label="Pausar"><i class="fa-solid fa-pause"></i></button>
+              </div>
+            </div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div class="card-title"><i class="fa-solid fa-shield-halved"></i><h3>Distracciones</h3></div><span class="ai-chip"><i class="fa-solid fa-wand-magic-sparkles"></i> IA activa</span></div>
+            <div id="distractionCount" class="metric-big">0</div><div class="micro">distracciones registradas hoy</div>
+            <div class="insight-box"><b id="motivationTitle">Consejo de enfoque</b><span id="motivationText">Elimina las notificaciones antes de iniciar tu sesión.</span></div>
+            <div id="distractionHistory" class="history"></div>
+          </article>
+          <article class="card" id="agenda">
+            <div class="card-head"><div class="card-title"><i class="fa-solid fa-list-check"></i><h3>Agenda de actividades</h3></div><button class="primary-btn" data-open="taskModal"><i class="fa-solid fa-plus"></i> Tarea</button></div>
+            <div id="taskList" class="task-list"></div>
+          </article>
+
+          <article class="card two" id="progreso">
+            <div class="card-head"><div class="card-title"><i class="fa-solid fa-chart-column"></i><h3>Progreso de los últimos 7 días</h3></div><span class="legend-note"><span style="color:var(--tomato)">●</span> Pomodoros &nbsp; <span style="color:var(--green)">●</span> Distracciones</span></div>
+            <div class="kpi-grid">
+              <div class="kpi"><b id="kpiTotal">0</b><span>Total pomodoros</span></div>
+              <div class="kpi"><b id="kpiDistr">0</b><span>Distracciones</span></div>
+              <div class="kpi"><b id="kpiSuccess">0%</b><span>Tasa de éxito</span></div>
+              <div class="kpi"><b id="kpiStreak">0 días</b><span>Racha actual</span></div>
+            </div>
+            <div class="chart-wrap"><canvas id="progressChart" aria-label="Gráfica de pomodoros y distracciones de los últimos siete días"></canvas></div>
+          </article>
+          <article class="card" id="logros">
+            <div class="card-head"><div class="card-title"><i class="fa-solid fa-medal"></i><h3>Insignias y logros</h3></div><span id="badgeSummary" class="micro">0 de 5</span></div>
+            <div id="badgeGrid" class="badge-grid"></div>
+          </article>
+
+          <article class="card two" id="evaluacion">
+            <div class="card-head"><div class="card-title"><i class="fa-solid fa-graduation-cap"></i><h3>Autoevaluación</h3></div><span id="evalDate" class="micro">Aún sin guardar</span></div>
+            <div class="eval-grid">
+              <form id="evaluationForm">
+                <div class="field"><label>Nivel de conocimiento</label><div class="choice-row">
+                  <label class="choice"><input type="radio" name="level" value="Principiante"><span>Principiante</span></label>
+                  <label class="choice"><input type="radio" name="level" value="Intermedio"><span>Intermedio</span></label>
+                  <label class="choice"><input type="radio" name="level" value="Avanzado"><span>Avanzado</span></label>
+                </div></div>
+                <div class="field"><label>Áreas a mejorar</label><div class="choice-row" id="areasChoices"></div></div>
+                <button class="primary-btn" type="submit">Guardar autoevaluación</button>
+              </form>
+              <div class="eval-saved"><small>PERFIL DE APRENDIZAJE</small><b id="evalLevel">Sin definir</b><span id="evalAreas">Selecciona tu nivel y las áreas que quieres fortalecer.</span></div>
+            </div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div class="card-title"><i class="fa-solid fa-person-chalkboard"></i><h3>Reporte docente</h3></div></div>
+            <div class="teacher-panel"><i class="fa-solid fa-arrow-trend-up"></i><div><b id="teacherTitle">Tu meta académica</b><p id="teacherText">Completa al menos 2 pomodoros hoy para avanzar hacia Excelencia Docente.</p></div></div>
+          </article>
+          <article class="card full">
+            <div class="card-head"><div class="card-title"><i class="fa-solid fa-brain"></i><h3>Recomendaciones inteligentes</h3></div><span class="ai-chip">Basadas en tus datos</span></div>
+            <div id="recommendations" class="ai-recommendations"></div>
+          </article>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <div id="taskModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+    <div class="modal"><div class="modal-head"><h3 id="taskModalTitle">Nueva actividad</h3><button class="modal-close" data-close="taskModal" aria-label="Cerrar">×</button></div>
+      <form id="taskForm"><input id="taskId" type="hidden"><div class="field"><label for="taskTitle">Título</label><input class="input" id="taskTitle" required maxlength="80" placeholder="Ej. Repasar álgebra"></div><div class="field"><label for="taskPomodoros">Pomodoros asignados</label><input class="input" id="taskPomodoros" type="number" min="1" max="20" value="1" required></div><div class="modal-actions"><button type="button" class="secondary-btn" data-close="taskModal">Cancelar</button><button type="submit" class="primary-btn">Guardar actividad</button></div></form>
+    </div>
+  </div>
+  <div id="distractionModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="distractionTitle">
+    <div class="modal"><div class="modal-head"><h3 id="distractionTitle">Recuperemos tu enfoque</h3><button class="modal-close" data-close="distractionModal" aria-label="Cerrar">×</button></div><p class="modal-copy">Notamos que saliste de la pestaña durante una sesión. Selecciona el motivo para identificar patrones.</p><div id="reasonGrid" class="reason-grid"></div><div class="modal-actions"><button class="secondary-btn" data-close="distractionModal">Ahora no</button><button id="registerDistraction" class="primary-btn">Registrar distracción</button></div></div>
+  </div>
+  <div id="firebaseModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="firebaseTitle">
+    <div class="modal wide"><div class="modal-head"><h3 id="firebaseTitle">Conectar con Firebase</h3><button class="modal-close" data-close="firebaseModal" aria-label="Cerrar">×</button></div><p class="modal-copy">Pega la configuración de tu aplicación web de Firebase. Se guarda solo en este navegador. Activa Email/Password en Authentication y crea Firestore antes de usar la nube.</p>
+      <form id="firebaseForm"><div class="firebase-fields"><div class="field"><label>API key</label><input class="input" id="fbApiKey" required></div><div class="field"><label>Project ID</label><input class="input" id="fbProjectId" required></div><div class="field"><label>Auth domain</label><input class="input" id="fbAuthDomain" required placeholder="proyecto.firebaseapp.com"></div><div class="field"><label>App ID</label><input class="input" id="fbAppId" required></div></div><div class="modal-actions"><button type="button" id="clearFirebase" class="danger-btn">Usar modo local</button><button type="submit" class="primary-btn">Guardar y recargar</button></div></form>
+    </div>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (function(){
+      'use strict';
+      var WORK_SECONDS=25*60, BREAK_SECONDS=5*60;
+      var areas=['Concentración','Gestión del Tiempo','Procrastinación','Organización','Manejo de Estrés'];
+      var reasons=['Redes sociales','Notificaciones','Ruido','Pensamientos','Otro'];
+      var motivations=[
+        '¡No te rindas! Cada pomodoro te acerca a tu meta. ¡Tú puedes!',
+        'La concentración es como un músculo: se fortalece con práctica. ¡Sigue así!',
+        'Recuerda: 25 minutos de enfoque profundo valen más que 2 horas de estudio distraído.',
+        '¡Excelente trabajo! Cada pomodoro cuenta para tu éxito académico.',
+        'La disciplina es el puente entre tus metas y tus logros. ¡Sigue adelante!'
+      ];
+      var tips=[
+        'Tómate tus descansos de 5 minutos para estirarte y despejar la mente.',
+        'Elimina notificaciones durante tus sesiones de estudio.',
+        'Mantén tu espacio de trabajo ordenado para mejorar la concentración.'
+      ];
+      var currentAuthMode='login', currentUser=null, firebaseReady=false, auth=null, db=null, unsubscribeTasks=null;
+      var selectedReason='Notificaciones', chart=null, interval=null, endAt=0, remaining=WORK_SECONDS, mode='work', running=false, sessionDistractions=0;
+      var state=null;
+      function id(x){return document.getElementById(x)}
+      function esc(x){var d=document.createElement('div');d.textContent=String(x==null?'':x);return d.innerHTML}
+      function dateKey(d){d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+      function defaultState(){
+        return {goal:4,totalPomodoros:0,streak:0,sessionsStarted:0,tasks:[],distractions:[],daily:{},achievements:{},evaluation:{level:'',areas:[],date:''},lastStudyDate:'',noDistractionWin:false};
+      }
+      function userKey(){return 'pomrend_data_'+String(currentUser&&currentUser.email||'demo').toLowerCase()}
+      function loadLocal(){try{state=Object.assign(defaultState(),JSON.parse(localStorage.getItem(userKey())||'{}'))}catch(e){state=defaultState()}ensureToday()}
+      function ensureToday(){var k=dateKey();if(!state.daily[k])state.daily[k]={pomodoros:0,distracciones:0};return state.daily[k]}
+      function saveLocal(){localStorage.setItem(userKey(),JSON.stringify(state))}
+      async function syncProfile(){
+        saveLocal();setSync(false);
+        if(!firebaseReady||!currentUser||currentUser.demo)return;
+        try{
+          await db.collection('usuarios').doc(currentUser.uid).set({
+            nombre:currentUser.name,email:currentUser.email,nivelConocimiento:state.evaluation.level||'',areasMejorar:state.evaluation.areas||[],fechaEvaluacion:state.evaluation.date||'',fechaRegistro:currentUser.createdAt||new Date().toISOString(),racha:state.streak,pomodorosTotales:state.totalPomodoros,metaDiaria:state.goal,sesionesIniciadas:state.sessionsStarted,ultimaFechaEstudio:state.lastStudyDate
+          },{merge:true});
+          setSync(true);
+        }catch(e){setSync(false);toast('No se pudo sincronizar con Firestore. Se conservó una copia local.','warn')}
+      }
+      function setSync(online){id('syncDot').classList.toggle('online',online);id('syncText').textContent=online?'Sincronizado con Firebase':'Guardado local'}
+      function toast(message,type){var t=id('toast');t.textContent=message;t.className='toast show '+(type||'');clearTimeout(t._h);t._h=setTimeout(function(){t.className='toast'},3600)}
+      function initials(name){return String(name||'PR').split(/\s+/).slice(0,2).map(function(x){return x[0]||''}).join('').toUpperCase()}
+      function openModal(name){id(name).classList.remove('hidden');var input=id(name).querySelector('input,button');if(input)setTimeout(function(){input.focus()},50)}
+      function closeModal(name){id(name).classList.add('hidden')}
+      function setupStaticChoices(){
+        id('areasChoices').innerHTML=areas.map(function(a){return '<label class="choice"><input type="checkbox" name="area" value="'+esc(a)+'"><span>'+esc(a)+'</span></label>'}).join('');
+        id('reasonGrid').innerHTML=reasons.map(function(r){return '<button type="button" class="reason-btn'+(r===selectedReason?' active':'')+'" data-reason="'+esc(r)+'">'+esc(r)+'</button>'}).join('');
+      }
+      function setAuthMode(next){
+        currentAuthMode=next;document.querySelectorAll('.auth-tab').forEach(function(b){b.classList.toggle('active',b.dataset.auth===next)});
+        document.querySelectorAll('.register-only').forEach(function(x){x.classList.toggle('hidden',next!=='register')});
+        id('fullName').required=next==='register';id('password').autocomplete=next==='register'?'new-password':'current-password';
+        id('authHeading').textContent=next==='register'?'Crea tu espacio de estudio':'Bienvenido de nuevo';
+        id('authLead').textContent=next==='register'?'Configura tu perfil y empieza a medir tu avance.':'Continúa tu sesión y mantén el impulso.';
+        id('authSubmit').textContent=next==='register'?'Crear cuenta':'Entrar a mi panel';
+      }
+      function readFirebaseConfig(){try{return JSON.parse(localStorage.getItem('pomrend_firebase_config')||'null')}catch(e){return null}}
+      function fillFirebaseForm(){
+        var c=readFirebaseConfig()||{};id('fbApiKey').value=c.apiKey||'';id('fbProjectId').value=c.projectId||'';id('fbAuthDomain').value=c.authDomain||'';id('fbAppId').value=c.appId||'';
+      }
+      function initFirebase(){
+        var c = {
+          apiKey: "AIzaSyAdJ0tZ9TQmw-nNWkUQTRUaglOo3HvZivA",
+          authDomain: "apppomodoroia-8yp16k.firebaseapp.com",
+          projectId: "apppomodoroia-8yp16k",
+          storageBucket: "apppomodoroia-8yp16k.appspot.com",
+          messagingSenderId: "784695657348",
+          appId: "1:784695657348:web:98433e46c9fe02270753d1"
+        };
+        
+        if(!c||!c.apiKey||!window.firebase){
+          id('demoNote').classList.remove('hidden');
+          return;
+        }
+        
+        try{
+          if(!firebase.apps.length) firebase.initializeApp(c);
+          auth = firebase.auth();
+          db = firebase.firestore();
+          firebaseReady = true;
+          id('demoNote').classList.add('hidden');
+          
+          document.querySelectorAll('[data-open="firebaseModal"]').forEach(function(btn){
+            btn.style.display = 'none';
+          });
+          
+          auth.onAuthStateChanged(async function(user){
+            if(user){
+              var doc = await db.collection('usuarios').doc(user.uid).get();
+              var p = doc.exists ? doc.data() : {};
+              enterApp({
+                uid: user.uid,
+                email: user.email,
+                name: p.nombre || user.displayName || user.email.split('@')[0],
+                createdAt: p.fechaRegistro || new Date().toISOString()
+              });
+            }
+          });
+        } catch(e){
+          firebaseReady = false;
+          toast('Error al inicializar Firebase: ' + e.message, 'warn');
+        }
+      }
+      
+      async function handleAuth(e){
+        e.preventDefault();
+        var email=id('email').value.trim(),pass=id('password').value,name=id('fullName').value.trim();
+        
+        console.log('Intentando auth...', {email, name, mode: currentAuthMode});
+        console.log('Firebase ready:', firebaseReady);
+        
+        try{
+          if(firebaseReady){
+            if(currentAuthMode==='register'){
+              console.log('Creando usuario...');
+              var cred=await auth.createUserWithEmailAndPassword(email,pass);
+              console.log('Usuario creado:', cred.user.uid);
+              await cred.user.updateProfile({displayName:name});
+              await db.collection('usuarios').doc(cred.user.uid).set({
+                nombre:name,
+                email:email,
+                nivelConocimiento:'',
+                areasMejorar:[],
+                fechaRegistro:new Date().toISOString(),
+                racha:0,
+                pomodorosTotales:0
+              });
+              console.log('Datos guardados en Firestore');
+            }else{
+              console.log('Iniciando sesión...');
+              await auth.signInWithEmailAndPassword(email,pass);
+              console.log('Sesión iniciada');
+            }
+          }else{
+            if(currentAuthMode==='register'&&!name){toast('Escribe tu nombre completo.','warn');return}
+            var saved=JSON.parse(localStorage.getItem('pomrend_demo_user_'+email.toLowerCase())||'null');
+            var u={uid:'local-'+btoa(unescape(encodeURIComponent(email))).replace(/=/g,''),email:email,name:name||(saved&&saved.name)||email.split('@')[0],createdAt:(saved&&saved.createdAt)||new Date().toISOString(),demo:true};
+            localStorage.setItem('pomrend_demo_user_'+email.toLowerCase(),JSON.stringify(u));
+            localStorage.setItem('pomrend_active_user',JSON.stringify(u));
+            enterApp(u);
+          }
+        }catch(err){
+          console.error('ERROR:', err);
+          toast(authError(err),'warn');
+        }
+      }
+      
+      function authError(err){
+        var c=err&&err.code||'';if(c.includes('email-already'))return'Ya existe una cuenta con ese correo.';if(c.includes('wrong-password')||c.includes('invalid-credential'))return'Correo o contraseña incorrectos.';if(c.includes('weak-password'))return'Usa una contraseña de al menos 6 caracteres.';return'No fue posible completar el acceso. Revisa tus datos.';
+      }
+      async function enterApp(user){
+        if(currentUser&&currentUser.uid===user.uid&&!id('appView').classList.contains('hidden'))return;
+        currentUser=user;loadLocal();
+        if(firebaseReady&&!user.demo)await loadCloudData();
+        id('authView').classList.add('hidden');id('appView').classList.remove('hidden');id('avatar').textContent=initials(user.name);id('welcomeTitle').textContent='¡Hola, '+user.name.split(' ')[0]+'! A construir un gran día.';
+        id('todayLabel').textContent=new Intl.DateTimeFormat('es-MX',{weekday:'long',day:'numeric',month:'long'}).format(new Date());
+        renderAll();if(firebaseReady&&!user.demo)listenCloudTasks();
+      }
+      async function loadCloudData(){
+        try{
+          var p=await db.collection('usuarios').doc(currentUser.uid).get();if(p.exists){var d=p.data();state.goal=d.metaDiaria||state.goal;state.totalPomodoros=d.pomodorosTotales||state.totalPomodoros;state.streak=d.racha||state.streak;state.sessionsStarted=d.sesionesIniciadas||state.sessionsStarted;state.lastStudyDate=d.ultimaFechaEstudio||state.lastStudyDate;state.evaluation={level:d.nivelConocimiento||'',areas:d.areasMejorar||[],date:d.fechaEvaluacion||''}}
+          var sessions=await db.collection('sesiones').where('userId','==',currentUser.uid).get();sessions.forEach(function(x){var s=x.data();state.daily[s.fecha]=Object.assign(state.daily[s.fecha]||{},s)});
+          var logs=await db.collection('logros').where('userId','==',currentUser.uid).get();logs.forEach(function(x){state.achievements[x.data().tipo]=true});saveLocal();
+        }catch(e){toast('Trabajando con la copia local mientras Firebase responde.','warn')}
+      }
+      function listenCloudTasks(){
+        if(unsubscribeTasks)unsubscribeTasks();unsubscribeTasks=db.collection('tareas').where('userId','==',currentUser.uid).onSnapshot(function(snap){
+          state.tasks=snap.docs.map(function(d){return Object.assign({},d.data(),{id:d.id})});saveLocal();renderTasks();
+        },function(){setSync(false)});
+      }
+      async function logout(){
+        pauseTimer();if(unsubscribeTasks)unsubscribeTasks();unsubscribeTasks=null;if(firebaseReady)await auth.signOut();localStorage.removeItem('pomrend_active_user');currentUser=null;id('appView').classList.add('hidden');id('authView').classList.remove('hidden');id('authForm').reset();
+      }
+      function renderAll(){ensureToday();id('dailyGoal').value=state.goal;renderTimer();renderStats();renderTasks();renderDistractions();renderBadges();renderEvaluation();renderTeacher();renderRecommendations();setSync(firebaseReady&&!currentUser.demo)}
+      function formatTime(sec){return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')}
+      function renderTimer(){
+        id('timerDisplay').textContent=formatTime(remaining);var total=mode==='work'?WORK_SECONDS:BREAK_SECONDS;id('timerProgress').style.width=Math.min(100,Math.max(0,(total-remaining)/total*100))+'%';
+        var pill=id('modePill'),card=id('timerCard');pill.textContent=running?(mode==='work'?'Trabajando':'Descansando'):'Listo';pill.classList.toggle('green',mode==='break');card.classList.toggle('break-mode',mode==='break');card.classList.toggle('timer-running',running);
+        id('timerState').textContent=mode==='work'?(running?'Enfoque profundo':'Preparado para enfocarte'):(running?'Descanso consciente':'Descanso listo');
+        var today=ensureToday(),goalPercent=Math.min(100,Math.round(today.pomodoros/state.goal*100));id('todayCount').textContent=today.pomodoros+' completados hoy';id('goalProgress').textContent=goalPercent+'% de la meta';id('dailyGoalBar').style.width=goalPercent+'%';id('startBtn').disabled=running;
+      }
+      function startTimer(){if(running)return;running=true;if(mode==='work'&&remaining===WORK_SECONDS)state.sessionsStarted++;endAt=Date.now()+remaining*1000;interval=setInterval(tick,250);renderTimer();saveLocal();id('motivationText').textContent=motivations[1]}
+      function tick(){remaining=Math.max(0,Math.ceil((endAt-Date.now())/1000));renderTimer();if(remaining<=0)completePhase()}
+      function pauseTimer(){if(!running)return;clearInterval(interval);interval=null;remaining=Math.max(0,Math.ceil((endAt-Date.now())/1000));running=false;renderTimer()}
+      function resetTimer(){pauseTimer();remaining=mode==='work'?WORK_SECONDS:BREAK_SECONDS;sessionDistractions=0;renderTimer()}
+      async function completePhase(){
+        clearInterval(interval);interval=null;running=false;
+        if(mode==='work'){await recordPomodoro();mode='break';remaining=BREAK_SECONDS;toast(ensureToday().pomodoros===2?'¡Objetivo docente logrado! Completaste 2 pomodoros hoy.':'¡Pomodoro completado! Es momento de descansar.','success');id('motivationText').textContent=motivations[3]}
+        else{mode='work';remaining=WORK_SECONDS;sessionDistractions=0;toast('Descanso terminado. Tu siguiente bloque está listo.','success')}
+        renderAll();
+      }
+      function updateStreak(){
+        var today=dateKey(),y=new Date();y.setDate(y.getDate()-1);var yesterday=dateKey(y);
+        if(state.lastStudyDate!==today){state.streak=state.lastStudyDate===yesterday?state.streak+1:1;state.lastStudyDate=today}
+      }
+      async function recordPomodoro(){
+        var today=ensureToday();today.pomodoros++;state.totalPomodoros++;updateStreak();if(sessionDistractions===0)state.noDistractionWin=true;checkAchievements();saveLocal();await syncSession();await syncProfile();
+      }
+      async function syncSession(){
+        if(!firebaseReady||currentUser.demo)return;var k=dateKey();try{await db.collection('sesiones').doc(currentUser.uid+'_'+k).set({userId:currentUser.uid,fecha:k,pomodoros:state.daily[k].pomodoros,distracciones:state.daily[k].distracciones||0},{merge:true});setSync(true)}catch(e){setSync(false)}
+      }
+      function renderStats(){
+        var today=ensureToday(),success=state.sessionsStarted?Math.round(state.totalPomodoros/state.sessionsStarted*100):0;id('kpiTotal').textContent=state.totalPomodoros;id('kpiDistr').textContent=Object.keys(state.daily).reduce(function(n,k){return n+(state.daily[k].distracciones||0)},0);id('kpiSuccess').textContent=Math.min(100,success)+'%';id('kpiStreak').textContent=state.streak+' '+(state.streak===1?'día':'días');
+        renderChart();renderTimer();
+      }
+      function last7(){
+        var out=[];for(var i=6;i>=0;i--){var d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);var k=dateKey(d),v=state.daily[k]||{};out.push({label:new Intl.DateTimeFormat('es-MX',{weekday:'short'}).format(d).replace('.',''),pomodoros:v.pomodoros||0,distracciones:v.distracciones||0})}return out;
+      }
+      function renderChart(){
+        if(!window.Chart)return;var data=last7(),ctx=id('progressChart');if(chart)chart.destroy();chart=new Chart(ctx,{type:'bar',data:{labels:data.map(function(x){return x.label}),datasets:[{label:'Pomodoros',data:data.map(function(x){return x.pomodoros}),backgroundColor:'#e74c3c',borderRadius:5,maxBarThickness:24},{label:'Distracciones',data:data.map(function(x){return x.distracciones}),backgroundColor:'#2ecc71',borderRadius:5,maxBarThickness:24}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},border:{display:false},ticks:{color:'#7b8495',font:{size:10}}},y:{beginAtZero:true,ticks:{precision:0,color:'#7b8495',font:{size:10}},grid:{color:'#edf0f4'},border:{display:false}}}}})}
+      async function saveTask(e){
+        e.preventDefault();var task={title:id('taskTitle').value.trim(),pomodoros:Number(id('taskPomodoros').value)||1,completed:false,updatedAt:new Date().toISOString()};var editId=id('taskId').value;
+        if(editId){var old=state.tasks.find(function(x){return x.id===editId});task.completed=old?old.completed:false;task.id=editId}else task.id='t'+Date.now();
+        if(firebaseReady&&!currentUser.demo){task.userId=currentUser.uid;try{if(editId)await db.collection('tareas').doc(editId).set(task,{merge:true});else await db.collection('tareas').add(task);setSync(true)}catch(err){toast('No se pudo guardar en Firebase.','warn')}}else{var ix=state.tasks.findIndex(function(x){return x.id===task.id});if(ix>=0)state.tasks[ix]=task;else state.tasks.unshift(task);saveLocal();renderTasks()}
+        closeModal('taskModal');id('taskForm').reset();id('taskId').value='';id('taskPomodoros').value=1;toast(editId?'Actividad actualizada.':'Actividad creada.','success');
+      }
+      function editTask(taskId){var t=state.tasks.find(function(x){return x.id===taskId});if(!t)return;id('taskId').value=t.id;id('taskTitle').value=t.title;id('taskPomodoros').value=t.pomodoros;id('taskModalTitle').textContent='Editar actividad';openModal('taskModal')}
+      async function toggleTask(taskId){var t=state.tasks.find(function(x){return x.id===taskId});if(!t)return;t.completed=!t.completed;t.updatedAt=new Date().toISOString();await persistTask(t);renderTasks()}
+      async function deleteTask(taskId){if(!confirm('¿Eliminar esta actividad?'))return;if(firebaseReady&&!currentUser.demo){try{await db.collection('tareas').doc(taskId).delete()}catch(e){toast('No se pudo eliminar en Firebase.','warn')}}else{state.tasks=state.tasks.filter(function(x){return x.id!==taskId});saveLocal();renderTasks()}}
+      async function persistTask(t){if(firebaseReady&&!currentUser.demo){try{await db.collection('tareas').doc(t.id).set(t,{merge:true})}catch(e){setSync(false)}}else saveLocal()}
+      function renderTasks(){
+        var box=id('taskList');if(!state.tasks.length){box.innerHTML='<div class="empty"><i class="fa-regular fa-calendar-plus" style="font-size:24px;margin-bottom:8px"></i><br>Añade tu primera actividad de estudio.</div>';return}
+        box.innerHTML=state.tasks.map(function(t){return '<div class="task-item '+(t.completed?'completed':'')+'"><button class="task-check '+(t.completed?'done':'')+'" data-task-toggle="'+esc(t.id)+'" aria-label="Marcar actividad">'+(t.completed?'✓':'')+'</button><div class="task-copy"><b>'+esc(t.title)+'</b><small>'+t.pomodoros+' '+(t.pomodoros===1?'pomodoro':'pomodoros')+'</small></div><div class="task-menu"><button data-task-edit="'+esc(t.id)+'" aria-label="Editar"><i class="fa-solid fa-pen"></i></button><button data-task-delete="'+esc(t.id)+'" aria-label="Eliminar"><i class="fa-solid fa-trash"></i></button></div></div>'}).join('');
+      }
+      async function registerDistraction(){
+        var now=new Date(),today=ensureToday();today.distracciones=(today.distracciones||0)+1;sessionDistractions++;state.distractions.unshift({time:now.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),reason:selectedReason,date:dateKey()});state.distractions=state.distractions.slice(0,30);
+        if(sessionDistractions>=3){state.streak=0;toast('Tres distracciones en esta sesión: tu racha se reinició. Volvamos a enfocarnos.','warn')}else toast('Distracción registrada. Reconocerla es el primer paso.','success');
+        id('motivationText').textContent=motivations[Math.floor(Math.random()*motivations.length)];saveLocal();await syncSession();await syncProfile();closeModal('distractionModal');renderAll();
+      }
+      function renderDistractions(){var today=ensureToday();id('distractionCount').textContent=today.distracciones||0;var recent=state.distractions.filter(function(x){return x.date===dateKey()}).slice(0,5);id('distractionHistory').innerHTML=recent.length?recent.map(function(x){return '<div class="history-item"><b>'+esc(x.reason)+'</b><span>'+esc(x.time)+'</span></div>'}).join(''):'<div class="empty" style="padding:12px 0">Sin distracciones registradas hoy.</div>'}
+      function badgeDefs(){
+        var today=ensureToday(),last3=last7().slice(-3);return[
+          {key:'first',icon:'🥉',name:'Primer Pomodoro',desc:'Completar 1 pomodoro',ok:state.totalPomodoros>=1},
+          {key:'constant',icon:'🥈',name:'Estudiante Constante',desc:'Mantener una racha de 3 días',ok:state.streak>=3},
+          {key:'champion',icon:'🥇',name:'Campeón de Estudio',desc:'Completar 5 pomodoros en un día',ok:today.pomodoros>=5},
+          {key:'focus',icon:'💎',name:'Sin Distracciones',desc:'Completar una sesión sin distracciones',ok:state.noDistractionWin},
+          {key:'teacher',icon:'',name:'Excelencia Docente',desc:'Completar 2 o más pomodoros durante 3 días',ok:last3.every(function(x){return x.pomodoros>=2})}
+        ];
+      }
+      function checkAchievements(){badgeDefs().forEach(function(b){if(b.ok&&!state.achievements[b.key]){state.achievements[b.key]=true;toast('¡Nueva insignia: '+b.name+'!','success');syncAchievement(b)}})}
+      async function syncAchievement(b){if(!firebaseReady||currentUser.demo)return;try{await db.collection('logros').doc(currentUser.uid+'_'+b.key).set({userId:currentUser.uid,tipo:b.key,nombre:b.name,fecha:new Date().toISOString()})}catch(e){}}
+      function renderBadges(){var defs=badgeDefs(),won=0;defs.forEach(function(b){if(b.ok||state.achievements[b.key]){b.ok=true;state.achievements[b.key]=true;won++}});id('badgeSummary').textContent=won+' de '+defs.length;id('badgeGrid').innerHTML=defs.map(function(b){return '<div class="badge '+(b.ok?'':'locked')+'" data-tip="'+esc(b.desc)+'"><div class="badge-icon">'+b.icon+'</div><b>'+esc(b.name)+'</b><small>'+esc(b.desc)+'</small></div>'}).join('')}
+      async function saveEvaluation(e){
+        e.preventDefault();var level=(new FormData(e.target)).get('level');var selected=Array.from(document.querySelectorAll('input[name="area"]:checked')).map(function(x){return x.value});if(!level||!selected.length){toast('Selecciona un nivel y al menos un área.','warn');return}
+        state.evaluation={level:String(level),areas:selected,date:new Date().toISOString()};saveLocal();await syncProfile();renderEvaluation();renderRecommendations();toast('Autoevaluación guardada.','success');
+      }
+      function renderEvaluation(){
+        var e=state.evaluation||{};document.querySelectorAll('input[name="level"]').forEach(function(x){x.checked=x.value===e.level});document.querySelectorAll('input[name="area"]').forEach(function(x){x.checked=(e.areas||[]).includes(x.value)});
+        id('evalLevel').textContent=e.level||'Sin definir';id('evalAreas').textContent=e.areas&&e.areas.length?e.areas.join(' · '):'Selecciona tu nivel y las áreas que quieres fortalecer.';id('evalDate').textContent=e.date?'Guardada '+new Intl.DateTimeFormat('es-MX',{day:'numeric',month:'short',year:'numeric'}).format(new Date(e.date)):'Aún sin guardar';
+      }
+      function renderTeacher(){var n=ensureToday().pomodoros;if(n>=2){id('teacherTitle').textContent='¡Excelente! Has completado '+n+' pomodoros hoy.';id('teacherText').textContent='Cumpliste el objetivo docente diario. ¡Sigue así!'}else{id('teacherTitle').textContent='Te falta '+(2-n)+' '+(2-n===1?'pomodoro':'pomodoros')+' para el objetivo docente';id('teacherText').textContent='Completa al menos 2 hoy para avanzar hacia Excelencia Docente.'}}
+      function renderRecommendations(){
+        var today=ensureToday(),pending=state.tasks.filter(function(t){return !t.completed}).length,ratio=today.pomodoros?today.distracciones/today.pomodoros:today.distracciones;
+        var recs=[
+          {t:'Próximo bloque',x:pending?'Empieza por "'+state.tasks.find(function(t){return !t.completed}).title+'" y reserva '+state.tasks.find(function(t){return !t.completed}).pomodoros+' pomodoro(s).':'Añade una tarea concreta antes de iniciar el siguiente ciclo.'},
+          {t:'Patrón de enfoque',x:ratio>1?'Tus distracciones superan tus bloques completos. Silencia alertas y deja el teléfono fuera de alcance.':'Tu relación enfoque-distracción es saludable. Conserva el mismo entorno de estudio.'},
+          {t:'Hábito recomendado',x:state.streak>=3?'Protege tu racha: programa mañana el mismo horario de inicio.':tips[(today.distracciones+today.pomodoros)%tips.length]}
+        ];
+        id('recommendations').innerHTML=recs.map(function(r){return '<div class="rec"><b>'+esc(r.t)+'</b><span>'+esc(r.x)+'</span></div>'}).join('');
+      }
+      function bindEvents(){
+        document.querySelectorAll('.auth-tab').forEach(function(b){b.addEventListener('click',function(){setAuthMode(b.dataset.auth)})});id('authForm').addEventListener('submit',handleAuth);id('logoutBtn').addEventListener('click',logout);
+        document.querySelectorAll('[data-open]').forEach(function(b){b.addEventListener('click',function(){if(b.dataset.open==='taskModal'){id('taskForm').reset();id('taskId').value='';id('taskPomodoros').value=1;id('taskModalTitle').textContent='Nueva actividad'}if(b.dataset.open==='firebaseModal')fillFirebaseForm();openModal(b.dataset.open)})});
+        document.querySelectorAll('[data-close]').forEach(function(b){b.addEventListener('click',function(){closeModal(b.dataset.close)})});
+        document.querySelectorAll('.modal-backdrop').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)closeModal(m.id)})});
+        document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.modal-backdrop:not(.hidden)').forEach(function(m){closeModal(m.id)})});
+        document.querySelectorAll('.nav-btn').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.nav-btn').forEach(function(x){x.classList.remove('active')});b.classList.add('active');id(b.dataset.scroll).scrollIntoView({behavior:'smooth',block:'start'})})});
+        id('startBtn').addEventListener('click',startTimer);id('pauseBtn').addEventListener('click',pauseTimer);id('resetBtn').addEventListener('click',resetTimer);id('dailyGoal').addEventListener('change',function(){state.goal=Math.max(1,Math.min(20,Number(this.value)||4));this.value=state.goal;syncProfile();renderAll()});
+        id('taskForm').addEventListener('submit',saveTask);id('taskList').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;if(b.dataset.taskToggle)toggleTask(b.dataset.taskToggle);if(b.dataset.taskEdit)editTask(b.dataset.taskEdit);if(b.dataset.taskDelete)deleteTask(b.dataset.taskDelete)});
+        id('reasonGrid').addEventListener('click',function(e){var b=e.target.closest('[data-reason]');if(!b)return;selectedReason=b.dataset.reason;document.querySelectorAll('.reason-btn').forEach(function(x){x.classList.toggle('active',x===b)})});id('registerDistraction').addEventListener('click',registerDistraction);
+        id('evaluationForm').addEventListener('submit',saveEvaluation);
+        id('firebaseForm').addEventListener('submit',function(e){e.preventDefault();localStorage.setItem('pomrend_firebase_config',JSON.stringify({apiKey:id('fbApiKey').value.trim(),projectId:id('fbProjectId').value.trim(),authDomain:id('fbAuthDomain').value.trim(),appId:id('fbAppId').value.trim()}));location.reload()});
+        id('clearFirebase').addEventListener('click',function(){localStorage.removeItem('pomrend_firebase_config');location.reload()});
+        document.addEventListener('visibilitychange',function(){if(document.hidden&&running&&mode==='work'){window._pomrendAway=true}else if(!document.hidden&&window._pomrendAway){window._pomrendAway=false;openModal('distractionModal')}});
+      }
+      function boot(){setupStaticChoices();bindEvents();initFirebase();var active=JSON.parse(localStorage.getItem('pomrend_active_user')||'null');if(active&&!firebaseReady)enterApp(active)}
+      boot();
+    })();
+  </script>
+</body>
+</html>
